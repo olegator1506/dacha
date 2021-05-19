@@ -1,67 +1,91 @@
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
 #include <DHTesp.h>
+#include "debug.h"
+#include "mynet.h"
+#include "config.h"
 
-ESP8266WebServer server(80);
 DHTesp dht;
-String SendHTML(float temperature)
-{
-  String ptr = "<!DOCTYPE html> <html>\n";
-  ptr +="<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
-  ptr +="<title>LED Control</title>\n";
-  ptr +="<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}\n";
-  ptr +="body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;} h3 {color: #444444;margin-bottom: 50px;}\n";
-  ptr +=".button {display: block;width: 80px;background-color: #1abc9c;border: none;color: white;padding: 13px 30px;text-decoration: none;font-size: 25px;margin: 0px auto 35px;cursor: pointer;border-radius: 4px;}\n";
-  ptr +=".button-on {background-color: #1abc9c;}\n";
-  ptr +=".button-on:active {background-color: #16a085;}\n";
-  ptr +=".button-off {background-color: #34495e;}\n";
-  ptr +=".button-off:active {background-color: #2c3e50;}\n";
-  ptr +="p {font-size: 14px;color: #888;margin-bottom: 10px;}\n";
-  ptr +="</style>\n";
-  ptr +="</head>\n";
-  ptr +="<body>\n";
-  ptr +="<h1>ESP8266 Web Server</h1>\n";
-  ptr +="<h3>Using Access Point(AP) Mode</h3>\n";
+os_timer_t myTimer;
+String errorMessage;
+typedef struct {
+    unsigned long seconds,microseconds;
+} CurTime;
+volatile CurTime curTime{0,0};
+bool dhtSynced = false; 
+time_t dhtLastUpdate = 0; 
+
+bool execRequest(String topic, String data) {
+  const char* pData = data.c_str();
+  const char* pTopic = topic.c_str();
+  DBG("Got request %s = %s",pTopic,pData);
+  return true;
+}
+
+void timer1s(void){
+}
+/**
+ * @summary Прерывания от таймера с периодом 1 ms 
+**/
+
+void  timerISR(void *arg){
+    curTime.microseconds += TIMER_PERIOD;
+    if(curTime.microseconds == 1000000L) {
+      curTime.microseconds = 0;
+      curTime.seconds++;
+      timer1s();
+    }
+}
+
+void dhtLoop(void) {
+  char strT[10], strH[10];
+  float temperature = 0;
+  float humidity = 0;
+  time_t curT = millis() /1000;
+  if(((curT - dhtLastUpdate) < DHT_UPDATE_PERIOD) && dhtSynced) return;
+  DHTesp *dht = new DHTesp;
+  dht->setup(DHT22_PIN,DHTesp::DHT11);
+  humidity = dht->getHumidity();
+  temperature = dht->getTemperature();
+  delete(dht);
+  dhtLastUpdate = millis() / 1000;
+  if(temperature > 0) strT[0] = '+'; 
+  else if(temperature < 0) strT[0] = '-';
+  else if( (temperature <0.1) && (temperature > -0.1)) strT[0] = ' ';
+  dtostrf(temperature, 4, 1, strT+1);
+  dtostrf(humidity, 2, 0, strH);
+  mqttPublish("temperature",strT,true);
+  mqttPublish("humidity",strH,true);
+  DBG("Temperature %s Humidity %s",strT,strH);
+  dhtSynced = true;
+}
+
+
+
+void setup(void) {
   
-  ptr += "Temperature:";
-  ptr+= temperature;
-  ptr +="</body>\n";
-  ptr +="</html>\n";
-  return ptr;
-}
-
-
-void handle_OnConnect() {
-  Serial.println("New request");
-  float newT = dht.getTemperature();
-  Serial.print("Temperature:");
-  Serial.println(newT);
-  server.send(200, "text/html", SendHTML(newT)); 
-}
-
-
-void setup()
-{
-  Serial.begin(115200);
-  Serial.println();
-  dht.setup(D5,DHTesp::DHT22);
-  WiFi.begin("ELTEX-63F2", "Z@e61s#8se");
-
-  Serial.print("Connecting");
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(".");
+#ifdef __DEBUG__  
+  debugMode = true;
+#ifdef __DEBUG_SERIAL__
+  debugSerial = true;
+#endif  
+  if(debugSerial){
+    Serial.begin(76800);  while(!Serial);
   }
-  Serial.println();
-  
-  Serial.print("Connected, IP address: ");
-  Serial.println(WiFi.localIP());
-  server.on("/", handle_OnConnect);
-  server.begin();
+#endif
+DBG("Start..");
+  os_timer_setfn(&myTimer,timerISR,NULL);
+  os_timer_arm(&myTimer,1,true);
+  netInit(WIFI_SSID, WIFI_PASS, MQTT_SERVER, MQTT_CLIENT_ID, MQTT_BASE);
+//  attachInterrupt(D5,czInterrupt,RISING);
 }
 
 void loop() {
-  server.handleClient();
+  static unsigned int seconds =0;
+  unsigned int s = curTime.seconds;
+  if((s - seconds) == 10) {
+    seconds = s;
+    DBG("CurTime %lu. %lu",curTime.seconds,curTime.microseconds);
+  } 
+  netLoop();
+  dhtLoop();
 }
