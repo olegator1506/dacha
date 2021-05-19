@@ -1,0 +1,14 @@
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
+#define __DEBUG__ 1
+#define __DEBUG_SERIAL__ 1
+#define WIFI_SSID "MyNet"
+#define WIFI_PASS "*****"
+#define MQTT_SERVER "192.168.253.20"
+#define MQTT_CLIENT_ID "Thermostat"
+#define MQTT_BASE "/SweetHome/dacha/thermostat/"
+#define MQTT_DEBUG_TOPIC "/SweetHome/dacha/debug"
+#define TIMER_PERIOD 1000 
+#define DHT22_PIN D5
+#define DHT_UPDATE_PERIOD 60
+#endif
