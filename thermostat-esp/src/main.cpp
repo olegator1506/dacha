@@ -43,7 +43,7 @@ void dhtLoop(void) {
   time_t curT = millis() /1000;
   if(((curT - dhtLastUpdate) < DHT_UPDATE_PERIOD) && dhtSynced) return;
   DHTesp *dht = new DHTesp;
-  dht->setup(DHT22_PIN,DHTesp::DHT11);
+  dht->setup(DHT22_PIN,DHTesp::DHT22);
   humidity = dht->getHumidity();
   temperature = dht->getTemperature();
   delete(dht);
