@@ -1,0 +1,67 @@
+#include <Arduino.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+#include <DHTesp.h>
+
+ESP8266WebServer server(80);
+DHTesp dht;
+String SendHTML(float temperature)
+{
+  String ptr = "<!DOCTYPE html> <html>\n";
+  ptr +="<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
+  ptr +="<title>LED Control</title>\n";
+  ptr +="<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}\n";
+  ptr +="body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;} h3 {color: #444444;margin-bottom: 50px;}\n";
+  ptr +=".button {display: block;width: 80px;background-color: #1abc9c;border: none;color: white;padding: 13px 30px;text-decoration: none;font-size: 25px;margin: 0px auto 35px;cursor: pointer;border-radius: 4px;}\n";
+  ptr +=".button-on {background-color: #1abc9c;}\n";
+  ptr +=".button-on:active {background-color: #16a085;}\n";
+  ptr +=".button-off {background-color: #34495e;}\n";
+  ptr +=".button-off:active {background-color: #2c3e50;}\n";
+  ptr +="p {font-size: 14px;color: #888;margin-bottom: 10px;}\n";
+  ptr +="</style>\n";
+  ptr +="</head>\n";
+  ptr +="<body>\n";
+  ptr +="<h1>ESP8266 Web Server</h1>\n";
+  ptr +="<h3>Using Access Point(AP) Mode</h3>\n";
+  
+  ptr += "Temperature:";
+  ptr+= temperature;
+  ptr +="</body>\n";
+  ptr +="</html>\n";
+  return ptr;
+}
+
+
+void handle_OnConnect() {
+  Serial.println("New request");
+  float newT = dht.getTemperature();
+  Serial.print("Temperature:");
+  Serial.println(newT);
+  server.send(200, "text/html", SendHTML(newT)); 
+}
+
+
+void setup()
+{
+  Serial.begin(115200);
+  Serial.println();
+  dht.setup(D5,DHTesp::DHT22);
+  WiFi.begin("ELTEX-63F2", "Z@e61s#8se");
+
+  Serial.print("Connecting");
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println();
+  
+  Serial.print("Connected, IP address: ");
+  Serial.println(WiFi.localIP());
+  server.on("/", handle_OnConnect);
+  server.begin();
+}
+
+void loop() {
+  server.handleClient();
+}
