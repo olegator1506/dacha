@@ -10,5 +10,7 @@
 #define MQTT_DEBUG_TOPIC "/SweetHome/dacha/debug"
 #define TIMER_PERIOD 1000 
 #define DHT22_PIN D5
+#define RELE_PINS {D6,D7}
+#define RELE_COUNT 2
 #define DHT_UPDATE_PERIOD 60
 #endif
