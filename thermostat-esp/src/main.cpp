@@ -35,11 +35,23 @@ typedef struct {
     unsigned long seconds,microseconds;
 } CurTime;
 volatile CurTime curTime{0,0};
+bool _releState[RELE_COUNT];
+
+
+void setRele(uint8_t num,bool state) {
+  int pins[] = RELE_PINS;
+  DBG("Set rele #%d %s",num, state ? "ON":"OFF");
+  _releState[num] = state;
+  digitalWrite(pins[num],state);
+}
 
 bool execRequest(String topic, String data) {
   const char* pData = data.c_str();
   const char* pTopic = topic.c_str();
   DBG("Got request %s = %s",pTopic,pData);
+  if(topic == "setRele01") {
+    setRele(0,(data == "1"));
+  }
   return true;
 }
 
@@ -178,6 +190,13 @@ DBG("Start..");
   netInit(WIFI_SSID, WIFI_PASS, MQTT_SERVER, MQTT_CLIENT_ID, MQTT_BASE);
 //  attachInterrupt(D5,czInterrupt,RISING);
   ds20Init();
+
+  int pins[] = RELE_PINS;
+  for(uint8_t i=0; i< RELE_COUNT;i++) {
+    pinMode(pins[i],OUTPUT);
+    setRele(i,false);    
+  }
+  
 }
 
 void loop() {
