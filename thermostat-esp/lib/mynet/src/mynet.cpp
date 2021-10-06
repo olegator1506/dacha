@@ -11,7 +11,7 @@
 #define KEEP_ALIVE_PERIOD 60
 
 
-char *_wifiSsid = NULL, *_wifiPass=NULL, *_mqttServer = NULL, *_mqttId = NULL,*_mqttBase=NULL;
+char *_wifiSsid = NULL, *_wifiPass=NULL, *_mqttServer = NULL, *_mqttId = NULL,*_mqttBase=NULL, *_mqttUser=NULL, *_mqttPass;
 bool _mqttConnected = false;
 WiFiEventHandler gotIpEventHandler, disconnectedEventHandler;
 WiFiClient wifiClient;
@@ -146,7 +146,7 @@ void mqttLoop(){
   if(WiFi.status() != WL_CONNECTED) return;
   if(!mqttClient.connected()){
 //    Serial.print("MQTT client disconnected. Try connect...");
-      if(mqttClient.connect(_mqttId)) {
+      if(mqttClient.connect(_mqttId, _mqttUser, _mqttPass)) {
 //        Serial.println("Success");
         mqttClient.subscribe(String(_mqttBase) + String("#"));
       } 
@@ -202,12 +202,14 @@ void netLoop(){
 
 
 
-void netInit(char *wifiSsid, char *wifiPass,char *mqttServer, char *mqttId, char *mqttBase){
+void netInit(char *wifiSsid, char *wifiPass,char *mqttServer, char *mqttId, char *mqttBase, char *mqttUser, char *mqttPass){
   _wifiSsid = strdup(wifiSsid);
   _wifiPass = strdup(wifiPass);
   _mqttServer = strdup(mqttServer);
   _mqttId = strdup(mqttId); 
   _mqttBase = strdup(mqttBase); 
+  _mqttUser = strdup(mqttUser);
+  _mqttPass = strdup(mqttPass);
   gotIpEventHandler = WiFi.onStationModeGotIP([](const WiFiEventStationModeGotIP& event)
   {
     Serial.print("Station connected, IP: ");   Serial.println(WiFi.localIP());
