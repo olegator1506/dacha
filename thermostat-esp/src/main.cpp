@@ -187,7 +187,7 @@ void setup(void) {
 DBG("Start..");
   os_timer_setfn(&myTimer,timerISR,NULL);
   os_timer_arm(&myTimer,1,true);
-  netInit(WIFI_SSID, WIFI_PASS, MQTT_SERVER, MQTT_CLIENT_ID, MQTT_BASE);
+  netInit(WIFI_SSID, WIFI_PASS, MQTT_SERVER, MQTT_CLIENT_ID, MQTT_BASE,MQTT_USER,MQTT_PASSWORD);
 //  attachInterrupt(D5,czInterrupt,RISING);
   ds20Init();
 
