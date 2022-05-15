@@ -42,7 +42,7 @@ void setRele(uint8_t num,bool state) {
   int pins[] = RELE_PINS;
   DBG("Set rele #%d %s",num, state ? "ON":"OFF");
   _releState[num] = state;
-  digitalWrite(pins[num],state);
+  digitalWrite(pins[num],state); 
 }
 
 bool execRequest(String topic, String data) {
@@ -50,7 +50,7 @@ bool execRequest(String topic, String data) {
   const char* pTopic = topic.c_str();
   DBG("Got request %s = %s",pTopic,pData);
   if(topic == "setRele01") {
-    setRele(0,(data == "1"));
+    setRele(0,(data == "1")); 
   }
   return true;
 }
@@ -193,7 +193,7 @@ DBG("Start..");
 
   int pins[] = RELE_PINS;
   for(uint8_t i=0; i< RELE_COUNT;i++) {
-    pinMode(pins[i],OUTPUT);
+    pinMode(pins[i],OUTPUT_OPEN_DRAIN);
     setRele(i,false);    
   }
   
