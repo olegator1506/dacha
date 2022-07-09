@@ -2,18 +2,39 @@
 
 #define PIR_PIN 2
 #define LIGHT_SENSOR_PIN A0
-#define OUT_PIN 4
-#define MOTION_PAUSE 120
+#define OUT_PIN 5
+#define MOTION_PAUSE 180
 //#define LIGHT_LEVEL 1000
-#define LIGHT_LEVEL 100
+#define LIGHT_LEVEL 15
 
 bool motionDetected = false;
 int lightLevel = 0;
+bool _lightState = false;
+int _outLevel = 0;
+
+void adjustLight(void) {
+  int l;
+  for(l = 0; l <=255;l++) {
+    analogWrite(OUT_PIN,l);
+    delay(10);
+    int ll = 1024 - analogRead(LIGHT_SENSOR_PIN);
+    if(ll > LIGHT_LEVEL) break;
+      
+  }
+    Serial.print("Out level ");Serial.println(l);
+}
 
 void light(bool state){
-    digitalWrite(OUT_PIN, state);
+    if(state == _lightState) return;
+    _lightState = state;
+    if(!state) {
+      analogWrite(OUT_PIN, 0);
+      _outLevel = 0;
+    }
+    else {
+      adjustLight();
+    }
     digitalWrite(LED_BUILTIN, state);
-    Serial.print("Light "); Serial.println(state ? "ON":"OFF");
 }
 
 void pirLoop(){
@@ -32,9 +53,7 @@ void pirLoop(){
    state = s;    
    if(state) {
     Serial.println("PIR pulse");
-     if(lightLevel <= LIGHT_LEVEL){
         light(true);
-    }
     state = true;
     pulseTime = t;
     if(!motionDetected) {
@@ -53,11 +72,11 @@ void setup() {
   Serial.begin(115200);
   pinMode(PIR_PIN,INPUT);
   pinMode(OUT_PIN,OUTPUT);
-  digitalWrite(OUT_PIN,LOW);
+  analogWrite(OUT_PIN,0);
   pinMode(LED_BUILTIN,OUTPUT);
   digitalWrite(LED_BUILTIN,LOW);
   pinMode(LIGHT_SENSOR_PIN,INPUT);
-  
+  Serial.println("Program started");
 }
 
 void loop() {
