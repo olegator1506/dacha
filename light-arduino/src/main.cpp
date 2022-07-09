@@ -1,11 +1,5 @@
 #include <Arduino.h>
-
-#define PIR_PIN 2
-#define LIGHT_SENSOR_PIN A0
-#define OUT_PIN 5
-#define MOTION_PAUSE 180
-//#define LIGHT_LEVEL 1000
-#define LIGHT_LEVEL 15
+#include "config.h"
 
 bool motionDetected = false;
 int lightLevel = 0;
