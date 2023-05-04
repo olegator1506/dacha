@@ -4,7 +4,7 @@
 #define __DEBUG_SERIAL__ 1
 
 
-#ifdef __DEBUG_SERIAL__ 1
+#ifdef __DEBUG__
     #define WIFI_SSID "SweetHome"
     #define WIFI_PASS "DoYr1941?"
     #define MQTT_SERVER "192.168.253.20"
@@ -22,9 +22,8 @@
     #define MQTT_USER "majordomo"
     #define MQTT_PASSWORD "Recoot7ska"
     #define MQTT_BASE "/SweetHome/Dacha/thermostat01/"
-#
-
 #endif
+
 #define TIMER_PERIOD 1000 
 //#define DHT22_PIN D5
 #define DHT_UPDATE_PERIOD 60

@@ -26,15 +26,14 @@
   float *ds20Temperatures;
   DeviceAddress *ds20Address;
   time_t ds20LastUpdate = 0;
-
 #endif
 
-os_timer_t myTimer;
+//os_timer_t myTimer;
 String errorMessage;
-typedef struct {
-    unsigned long seconds,microseconds;
-} CurTime;
-volatile CurTime curTime{0,0};
+//typedef struct {
+//    unsigned long seconds,microseconds;
+//} CurTime;
+//volatile CurTime curTime{0,0};
 bool _releState[RELE_COUNT];
 
 
@@ -138,7 +137,7 @@ void ds20Loop(){
   }  
 #endif
 }
-
+/*
 void  timerISR(void *arg){
     curTime.microseconds += TIMER_PERIOD;
     if(curTime.microseconds == 1000000L) {
@@ -147,7 +146,7 @@ void  timerISR(void *arg){
       timer1s();
     }
 }
-
+*/
 void dhtLoop(void) {
 #ifdef DHT22_PIN
   char strT[10], strH[10];
@@ -187,8 +186,8 @@ void setup(void) {
   }
 #endif
 DBG("Start..");
-  os_timer_setfn(&myTimer,timerISR,NULL);
-  os_timer_arm(&myTimer,1,true);
+//  os_timer_setfn(&myTimer,timerISR,NULL);
+//  os_timer_arm(&myTimer,1,true);
   netInit(WIFI_SSID, WIFI_PASS, MQTT_SERVER, MQTT_CLIENT_ID, MQTT_BASE,MQTT_USER,MQTT_PASSWORD);
 //  attachInterrupt(D5,czInterrupt,RISING);
   ds20Init();
@@ -203,10 +202,11 @@ DBG("Start..");
 
 void loop() {
   static unsigned int seconds =0;
-  unsigned int s = curTime.seconds;
+  unsigned int s = millis() / 1000;
+  int ms = millis() % 1000;
   if((s - seconds) == 10) {
     seconds = s;
-    DBG("CurTime %lu. %lu",curTime.seconds,curTime.microseconds);
+    DBG("CurTime %lu. %lu",s,ms);
   } 
   netLoop();
   dhtLoop();
