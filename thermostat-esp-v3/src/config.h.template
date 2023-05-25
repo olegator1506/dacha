@@ -26,8 +26,7 @@
 #define DHT_PIN D3
 // DS20 sensors
 //#define DS20_PIN D3
-//#define DS20_UPDATE_PERIOD 60
-//#define DS20_PRECISION 9
+//#define DS20_PRECISION 12
 #define RELE_COUNT 1
 #define RELE_PINS {D5}
 #endif

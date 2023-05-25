@@ -65,6 +65,8 @@ bool _releState[RELE_COUNT];
 
   bool sensorPoll(void) {
     bool result = false;
+    float temperature;
+    char strT[10], topic[20];
     for(uint8_t i =0; i<ds20Count;i++){
       DBG("DS20 request sensor # %d",i);
       if(!ds20.requestTemperaturesByAddress(ds20Address[i])) {
