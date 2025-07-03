@@ -78,10 +78,9 @@ bool _releState[RELE_COUNT];
       result = true;
       DBG("Temp %d = %f",i,temperature);
       sprintf(topic,"temperature%02d",i + 1);
-      if(temperature > 0) strT[0] = '+'; 
-      else if(temperature < 0) strT[0] = '-';
-      else if( (temperature <0.1) && (temperature > -0.1)) strT[0] = ' ';
-      dtostrf(temperature, 4, 1, strT+1);
+      if( (temperature <0.1) && (temperature > -0.1)) temperature = 0;
+      char len = (abs(temperature)>= 10) ? 4 : 3;
+      dtostrf(temperature, len, 1, strT);
       mqttPublish(topic,strT,true);
     }  
     return result;
@@ -137,12 +136,9 @@ bool execRequest(String topic, String data) {
 
 
 void sensorLoop(){
-  float temperature;
-  char strT[10], topic[20];
   if(!mqttConnected()) return;
   time_t curT = millis() /1000;
   if((curT - sensorLastUpdate) < UPDATE_PERIOD)  return;
-  if(sensorPoll())
   DBG("Sensor Loop");
   if(sensorPoll())  sensorLastUpdate = curT;
 }
@@ -163,10 +159,6 @@ void setup(void) {
   }
 #endif
 DBG("Start..");
-//  os_timer_setfn(&myTimer,timerISR,NULL);
-//  os_timer_arm(&myTimer,1,true);
-  netInit(WIFI_SSID, WIFI_PASS, MQTT_SERVER, MQTT_CLIENT_ID, MQTT_BASE,MQTT_USER,MQTT_PASSWORD);
-//  attachInterrupt(D5,czInterrupt,RISING);
   sensorInit();
   pinMode(LED_BUILTIN,OUTPUT);
   int pins[] = RELE_PINS;
@@ -174,7 +166,7 @@ DBG("Start..");
     pinMode(pins[i],OUTPUT_OPEN_DRAIN);
     setRele(i,false);    
   }
-  
+  netInit(WIFI_SSID, WIFI_PASS, MQTT_SERVER, MQTT_PORT, MQTT_CLIENT_ID, MQTT_BASE,MQTT_USER,MQTT_PASSWORD);
 }
 
 void loop() {

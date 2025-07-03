@@ -22,7 +22,7 @@ bool _releState[RELE_COUNT];
 
 void setRele(uint8_t num,bool state) {
   int pins[] = RELE_PINS;
-  DBG("Set rele #%d %s",num, state ? "ON":"OFF");
+  DBG("Set rele #%d %s Pin %d",num, state ? "ON":"OFF", pins[num]);
   _releState[num] = state;
   digitalWrite(pins[num],state);
 }
@@ -61,6 +61,7 @@ void dhtLoop(void) {
   char strT[10], strH[10];
   float temperature = 0;
   float humidity = 0;
+  byte len;
   time_t curT = millis() /1000;
   if(((curT - dhtLastUpdate) < DHT_UPDATE_PERIOD) && dhtSynced) return;
   DHTesp *dht = new DHTesp;
@@ -69,11 +70,17 @@ void dhtLoop(void) {
   temperature = dht->getTemperature();
   delete(dht);
   dhtLastUpdate = millis() / 1000;
+/*  
   if(temperature > 0) strT[0] = '+'; 
   else if(temperature < 0) strT[0] = '-';
   else if( (temperature <0.1) && (temperature > -0.1)) strT[0] = ' ';
   dtostrf(temperature, 4, 1, strT+1);
   dtostrf(humidity, 2, 0, strH);
+*/
+  if( (temperature <0.1) && (temperature > -0.1)) temperature = 0;
+  len = (abs(temperature)>= 10) ? 4 : 3;
+  dtostrf(temperature, len, 1, strT);
+  itoa(humidity,strH,10);
   mqttPublish("temperature",strT,true);
   mqttPublish("humidity",strH,true);
   DBG("Temperature %s Humidity %s",strT,strH);
@@ -95,17 +102,12 @@ void setup(void) {
   }
 #endif
 DBG("Start..");
-  os_timer_setfn(&myTimer,timerISR,NULL);
-  os_timer_arm(&myTimer,1,true);
-  netInit(WIFI_SSID, WIFI_PASS, MQTT_SERVER, MQTT_CLIENT_ID, MQTT_BASE,MQTT_USER,MQTT_PASSWORD);
-//  attachInterrupt(D5,czInterrupt,RISING);
-
   int pins[] = RELE_PINS;
   for(uint8_t i=0; i< RELE_COUNT;i++) {
     pinMode(pins[i],OUTPUT_OPEN_DRAIN);
     setRele(i,false);    
   }
-  
+  netInit(WIFI_SSID, WIFI_PASS, MQTT_SERVER, MQTT_PORT, MQTT_CLIENT_ID, MQTT_BASE,MQTT_USER,MQTT_PASSWORD);  
 }
 
 void loop() {

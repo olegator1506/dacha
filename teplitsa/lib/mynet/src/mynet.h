@@ -4,9 +4,11 @@
 #include <WiFiUdp.h>
 #include <time.h>
 
-extern void netInit(char *wifiSsid, char *wifiPass,char *mqttServer, char *mqttId,char *mqttBase,char *mqttUser,char *mqttPass);
+extern void netInit(char *wifiSsid, char *wifiPass,char *mqttServer, int mqttPort, char *mqttId,char *mqttBase,char *mqttUser,char *mqttPass);
 extern void netLoop(void);
 extern void mqttPublish(const char *path, const char *data, bool wait = false);
-extern bool mqttReady(void);
+extern bool netConnected(void);
+extern bool mqttConnected(void);
+
 #endif 
 

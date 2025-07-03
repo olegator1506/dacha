@@ -3,7 +3,7 @@
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-#include <MQTT.h>
+#include <PubSubClient.h>
 #include <ESP8266WebServer.h>
 #include "config.h"
 #include "debug.h" 
@@ -11,15 +11,16 @@
 #define KEEP_ALIVE_PERIOD 60
 
 
-char *_wifiSsid = NULL, *_wifiPass=NULL, *_mqttServer = NULL, *_mqttId = NULL,*_mqttBase=NULL, *_mqttUser=NULL, *_mqttPass;
+char *_wifiSsid = NULL, *_wifiPass=NULL, *_mqttServer = NULL, mqttPort, *_mqttId = NULL,*_mqttBase=NULL, *_mqttUser=NULL, *_mqttPass;
 bool _mqttConnected = false;
 WiFiEventHandler gotIpEventHandler, disconnectedEventHandler;
 static WiFiClient wifiClient;
-static MQTTClient mqttClient;
+static PubSubClient mqttClient(wifiClient);
 static ESP8266WebServer server(80);
 unsigned long _lastPubTime =0;
 String _lastMqttPubTopic="",_lastMqttPubValue="";
 void netLoop(void);
+int _mqttPort;
 
 
 extern bool execRequest(String topic, String data);
@@ -77,17 +78,24 @@ bool _mqttIsLoopBack(String topic, String value) {
 }
 
 
-void _mqttMessage(String &topic, String &payload){
+void _mqttMessage(char *topic, byte *payload, unsigned int length){
   String s;
+  String _topic(topic);
+  DBG("Got MQTT message %s",topic);
   int l = strlen(_mqttBase);
-   s = topic.substring(0,l);
+   s = _topic.substring(0,l);
   if(s != String(_mqttBase)) return;
-  s = topic.substring(l);
+  s = _topic.substring(l);
   if(s == "debug") return;
   if(s == "upTime") return;
-  if(_mqttIsLoopBack(s,payload)) return;
+  String _payload;
+  for (int i = 0; i < length; i++) {
+    _payload += String((char)payload[i]);
+  }
+
+  if(_mqttIsLoopBack(s,_payload)) return;
 //  Serial.print("Got MQTT message:"); Serial.print(s);Serial.print(" = "); Serial.println(payload);
-  execRequest(s,payload);
+  execRequest(s,_payload);
 }
 
 void otaInit(){
@@ -146,16 +154,17 @@ void otaInit(){
 void mqttLoop(){
   if(WiFi.status() != WL_CONNECTED) return;
   if(!mqttClient.connected()){
-//    Serial.print("MQTT client disconnected. Try connect...");
+    DBG("MQTT client disconnected. Try connect...");
       if(mqttClient.connect(_mqttId, _mqttUser, _mqttPass)) {
-//        Serial.println("Success");
-        mqttClient.subscribe(String(_mqttBase) + String("#"));
-      } 
-/*      else {
-          Serial.println("Fail");
+        DBG("Success");
+        String _t = String(_mqttBase) + "#";
+        mqttClient.subscribe( _t.c_str());
+        DBG("Subscribe %s",_t.c_str());
+      } else {
+          DBG("MQTT connect Fail!");
       }    
-*/
   }
+//  Serial.println("MQTT loop");
   mqttClient.loop();
 }
 
@@ -208,7 +217,7 @@ void netLoop(){
 
 
 
-void netInit(char *wifiSsid, char *wifiPass,char *mqttServer, char *mqttId, char *mqttBase, char *mqttUser, char *mqttPass){
+void netInit(char *wifiSsid, char *wifiPass,char *mqttServer, int mqttPort, char *mqttId, char *mqttBase, char *mqttUser, char *mqttPass){
   _wifiSsid = strdup(wifiSsid);
   _wifiPass = strdup(wifiPass);
   _mqttServer = strdup(mqttServer);
@@ -216,11 +225,13 @@ void netInit(char *wifiSsid, char *wifiPass,char *mqttServer, char *mqttId, char
   _mqttBase = strdup(mqttBase); 
   _mqttUser = strdup(mqttUser);
   _mqttPass = strdup(mqttPass);
+  _mqttPort = mqttPort;
   gotIpEventHandler = WiFi.onStationModeGotIP([](const WiFiEventStationModeGotIP& event)
   {
-    Serial.print("Station connected, IP: ");   Serial.println(WiFi.localIP());
+    DBG("Station connected, IP: %s",WiFi.localIP());
     otaInit();
-    mqttClient.begin(_mqttServer,wifiClient);
+    mqttClient.setServer(_mqttServer, _mqttPort);
+    mqttClient.setCallback(_mqttMessage);
   });
 
   disconnectedEventHandler = WiFi.onStationModeDisconnected([](const WiFiEventStationModeDisconnected& event)
@@ -230,7 +241,17 @@ void netInit(char *wifiSsid, char *wifiPass,char *mqttServer, char *mqttId, char
 //  Serial.printf("Connecting to %s ...\n", _wifiSsid);
   WiFi.mode(WIFI_STA);
   WiFi.begin(_wifiSsid, _wifiPass);
-  mqttClient.begin(_mqttServer,wifiClient);
-  mqttClient.onMessage(_mqttMessage);
+   while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  randomSeed(micros());
+   Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+  mqttClient.setServer(_mqttServer, _mqttPort);
+  mqttClient.setCallback(_mqttMessage);
   httpInit();
 }  
+ 

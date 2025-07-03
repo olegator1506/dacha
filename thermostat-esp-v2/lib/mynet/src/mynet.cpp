@@ -11,7 +11,7 @@
 #define KEEP_ALIVE_PERIOD 60
 
 
-char *_wifiSsid = NULL, *_wifiPass=NULL, *_mqttServer = NULL, *_mqttId = NULL,*_mqttBase=NULL, *_mqttUser=NULL, *_mqttPass;
+char *_wifiSsid = NULL, *_wifiPass=NULL, *_mqttServer = NULL, mqttPort, *_mqttId = NULL,*_mqttBase=NULL, *_mqttUser=NULL, *_mqttPass;
 bool _mqttConnected = false;
 WiFiEventHandler gotIpEventHandler, disconnectedEventHandler;
 static WiFiClient wifiClient;
@@ -20,6 +20,7 @@ static ESP8266WebServer server(80);
 unsigned long _lastPubTime =0;
 String _lastMqttPubTopic="",_lastMqttPubValue="";
 void netLoop(void);
+int _mqttPort;
 
 
 extern bool execRequest(String topic, String data);
@@ -208,7 +209,7 @@ void netLoop(){
 
 
 
-void netInit(char *wifiSsid, char *wifiPass,char *mqttServer, char *mqttId, char *mqttBase, char *mqttUser, char *mqttPass){
+void netInit(char *wifiSsid, char *wifiPass,char *mqttServer, int mqttPort, char *mqttId, char *mqttBase, char *mqttUser, char *mqttPass){
   _wifiSsid = strdup(wifiSsid);
   _wifiPass = strdup(wifiPass);
   _mqttServer = strdup(mqttServer);
@@ -216,11 +217,12 @@ void netInit(char *wifiSsid, char *wifiPass,char *mqttServer, char *mqttId, char
   _mqttBase = strdup(mqttBase); 
   _mqttUser = strdup(mqttUser);
   _mqttPass = strdup(mqttPass);
+  _mqttPort = mqttPort;
   gotIpEventHandler = WiFi.onStationModeGotIP([](const WiFiEventStationModeGotIP& event)
   {
     Serial.print("Station connected, IP: ");   Serial.println(WiFi.localIP());
     otaInit();
-    mqttClient.begin(_mqttServer,wifiClient);
+    mqttClient.begin(_mqttServer, _mqttPort, wifiClient);
   });
 
   disconnectedEventHandler = WiFi.onStationModeDisconnected([](const WiFiEventStationModeDisconnected& event)
@@ -230,7 +232,8 @@ void netInit(char *wifiSsid, char *wifiPass,char *mqttServer, char *mqttId, char
 //  Serial.printf("Connecting to %s ...\n", _wifiSsid);
   WiFi.mode(WIFI_STA);
   WiFi.begin(_wifiSsid, _wifiPass);
-  mqttClient.begin(_mqttServer,wifiClient);
+  mqttClient.begin(_mqttServer, _mqttPort, wifiClient);
   mqttClient.onMessage(_mqttMessage);
   httpInit();
 }  
+ 

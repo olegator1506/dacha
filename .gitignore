@@ -1,1 +1,4 @@
 .pio
+**/vendor/
+**/.env
+**/.vscode
