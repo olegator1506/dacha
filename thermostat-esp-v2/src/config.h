@@ -4,7 +4,8 @@
 #define __DEBUG_SERIAL__ 1
 //#define WIFI_SSID "GTS_2BRG11"
 //#define WIFI_PASS "e7d64500"
-#define WIFI_SSID "dacha-artem"
+//#define WIFI_SSID "dacha-artem"
+#define WIFI_SSID "SweetHome"
 #define WIFI_PASS "DoYr1941?"
 
 #define MQTT_SERVER "149.154.71.179"
@@ -25,4 +26,5 @@
 #define DS20_PRECISION 12
 #define RELE_COUNT 1
 #define RELE_PINS {D5}
+#define WOL_MAC "00:e0:4c:c5:a1:77"
 #endif

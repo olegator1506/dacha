@@ -8,6 +8,11 @@
 #include <DHTesp.h>
 #endif
 
+#ifdef WOL_MAC
+#include <WakeOnLan.h>
+WiFiUDP UDP;
+#endif
+
 #ifdef DS20_PIN
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -17,6 +22,10 @@
   DHTesp dht;
   bool dhtSynced = false; 
   time_t dhtLastUpdate = 0; 
+#endif
+
+#ifdef WOL_MAC
+WakeOnLan wol(UDP);
 #endif
 
 #ifdef DS20_PIN
@@ -185,6 +194,10 @@ void setup(void) {
     Serial.begin(76800);  while(!Serial);
   }
 #endif
+#ifdef WOL_MAC
+  IPAddress broadcast(255, 255, 255, 255);
+  wol.setBroadcastAddress(broadcast);
+#endif
 DBG("Start..");
 //  os_timer_setfn(&myTimer,timerISR,NULL);
 //  os_timer_arm(&myTimer,1,true);
@@ -208,6 +221,14 @@ void loop() {
     seconds = s;
     DBG("CurTime %lu. %lu",s,ms);
 //    mqttPublish("test","test",true);
+#ifdef WOL_MAC
+    Serial.println("Sending WOL packet...");
+    if (wol.sendMagicPacket(WOL_MAC)) {
+      Serial.println("WOL packet sent!");
+    } else {
+      Serial.println("Failed to send WOL!");
+    }
+#endif
   } 
   netLoop();
   dhtLoop();
