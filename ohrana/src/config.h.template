@@ -1,0 +1,37 @@
+#ifndef __CONIG_H__
+#define __CONIG_H__
+#define __DEBUG__ 1
+#define __DEBUG_TCP_PORT__ 8989
+
+//#define WIFI_SSID "GTS_2BRG11"
+//#define WIFI_PASS "e7d64500"
+//#define WIFI_SSID "dacha-artem"
+#define WIFI_SSID "SweetHome"
+#define WIFI_PASS "*******"
+
+#define MQTT_SERVER " 149.154.71.179"
+#define MQTT_PORT 10100
+#define MQTT_CLIENT_ID "Ohrana"
+//#define MQTT_USER "majordomo"
+//#define MQTT_PASSWORD "*****"
+#define MQTT_USER "u_BUSDX3"
+#define MQTT_PASSWORD "*****"
+#define MQTT_BASE "/SweetHome/Dacha/Ohrana/"
+#define MQTT_DEBUG_TOPIC "/SweetHome/Dacha/debug"
+
+#define  ATTENTION_DELAY 20
+#define OHRANA_DELAY    20
+#define LED_BLINK_FAST_DELAY 0.1
+#define LED_BLINK_SLOW_DELAY 0.5
+
+// RFID reader pins
+#define RFID_SS_PIN  D8 // The ESP8266 pin D8
+#define RFID_RST_PIN D0 // The ESP8266 pin D0
+#define IR_PIN D3
+#define LED_PIN BUILTIN_LED
+
+// Определение RFIDS
+#define RFIDS_TOTAL 4 // сколько элементов в массиве RFIDS
+#define RFIDS {{0xe5,0x19,0xd6,0x05},{0xda,0xbc,0xd6,0x05},{0x3c,0xbc,0xaa,0x04},{0xac,0x07,0x88,0x04}}
+
+#endif
