@@ -1,0 +1,13 @@
+{
+    "name": "artemenkooa/ohrana-monitor",
+    "authors": [
+        {
+            "name": "Олег Артеменко",
+            "email": "artemenkooa@iss-reshetnev.ru"
+        }
+    ],
+    "require": {
+        "bluerhinos/phpmqtt": "^1.0",
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
