@@ -62,7 +62,7 @@ void rfidLoop(void) {
     }
     rfid.PICC_HaltA(); // halt PICC
     rfid.PCD_StopCrypto1(); // stop encryption on PCD
-    success = false;
+    int success = -1;
     for(int i=0;i< RFIDS_TOTAL;i++) {
       flag = true ;
       for(int j=0;j< 4;j++) {
@@ -75,7 +75,9 @@ void rfidLoop(void) {
         break;
       }
     }
-    if(success){
+    if(success >= 0){
+      char *names[RFIDS_TOTAL] = RFID_NAMES;
+      mqttPublish("rfid",names[success], false);
       TState nextState;
       switch(_state) {
         case OHRANA:
