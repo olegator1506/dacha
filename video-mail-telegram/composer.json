@@ -1,0 +1,26 @@
+{
+    "name": "artem/video-mail-telegram",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "EmailToTelegram\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Oleg Artemenko",
+            "email": "olegator1506@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "ext-imap": "*",
+        "ext-curl": "*",
+        "vlucas/phpdotenv": "^5.6",
+        "monolog/monolog": "^3.5",
+        "guzzlehttp/guzzle": "^7.8"
+    },
+    "config": {
+        "platform-check": false
+    }
+}
