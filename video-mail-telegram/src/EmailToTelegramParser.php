@@ -282,7 +282,6 @@ class EmailToTelegramParser {
 
         return <<<MSG
 📧 <b>{$subject}</b>
-<b>Дата:</b> {$formattedDate}
 <b>Текст:</b>
 {$truncatedText}
 MSG;
