@@ -1,14 +1,14 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
-#define __DEBUG__ 1
-#define __DEBUG_SERIAL__ 1
+//#define __DEBUG__ 1
+//#define __DEBUG_SERIAL__ 1
 //#define WIFI_SSID "GTS_2BRG11"
 //#define WIFI_PASS "e7d64500"
-//#define WIFI_SSID "dacha-artem"
-#define WIFI_SSID "SweetHome"
+#define WIFI_SSID "dacha-artem"
+//#define WIFI_SSID "SweetHome"
 #define WIFI_PASS "DoYr1941?"
 
-#define MQTT_SERVER "149.154.71.179"
+#define MQTT_SERVER "m1.wqtt.ru"
 #define MQTT_PORT 10100
 #define MQTT_CLIENT_ID "Thermostat01"
 //#define MQTT_USER "majordomo"
